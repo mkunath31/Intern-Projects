@@ -1,0 +1,121 @@
+<mxfile host="app.diagrams.net" agent="Mozilla/5.0" version="24.7.17">
+  <diagram id="diagram-02-stakeholder-map" name="Stakeholder Map">
+    <mxGraphModel dx="1400" dy="900" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1400" pageHeight="950" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <mxCell id="title" value="Stakeholder Map — Who the Intern Talks to for What" style="text;html=1;align=center;verticalAlign=middle;fontSize=18;fontStyle=1;fillColor=none;strokeColor=none;" vertex="1" parent="1">
+          <mxGeometry x="40" y="20" width="1320" height="30" as="geometry" />
+        </mxCell>
+
+        <mxCell id="intern" value="Intern" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffd43b;strokeColor=#fab005;fontSize=16;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="640" y="430" width="120" height="80" as="geometry" />
+        </mxCell>
+
+        <mxCell id="mgr" value="Manager (You)&#10;&#10;Weekly 1:1&#10;Scope, demos, career" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e7f5ff;strokeColor=#339af0;fontSize=11;align=center;" vertex="1" parent="1">
+          <mxGeometry x="620" y="100" width="160" height="100" as="geometry" />
+        </mxCell>
+
+        <mxCell id="spandana" value="Spandana&#10;&#10;Day-to-day support&#10;Code review, unblocks&#10;Primary contact" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d3f9d8;strokeColor=#51cf66;fontSize=11;align=center;" vertex="1" parent="1">
+          <mxGeometry x="340" y="170" width="180" height="120" as="geometry" />
+        </mxCell>
+
+        <mxCell id="manu" value="Manu Verma&#10;Silver layer owner&#10;&#10;Weekly 30-min from Wk 5&#10;Reviews silver-layer findings" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d3f9d8;strokeColor=#51cf66;fontSize=11;align=center;" vertex="1" parent="1">
+          <mxGeometry x="880" y="170" width="180" height="120" as="geometry" />
+        </mxCell>
+
+        <mxCell id="checkpoint-box" value="Design sign-off&#10;Mark Kunath + Manu Verma&#10;&#10;End of Wk 4: validator design&#10;Start of Wk 9: DB pick" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#fff9db;strokeColor=#f59f00;strokeWidth=2;fontSize=11;align=center;dashed=1;" vertex="1" parent="1">
+          <mxGeometry x="540" y="320" width="320" height="80" as="geometry" />
+        </mxCell>
+
+        <mxCell id="john" value="John Thomas&#10;Replication owner&#10;&#10;Stakeholder for validator&#10;From Week 4 onward" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff4e6;strokeColor=#ffa94d;fontSize=11;align=center;" vertex="1" parent="1">
+          <mxGeometry x="60" y="600" width="180" height="120" as="geometry" />
+        </mxCell>
+
+        <mxCell id="dmo" value="Data Model Owners&#10;Dan Barkman, Brian Burkman,&#10;Mike Immrie&#10;&#10;Source→target mapping&#10;Naming standards" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff4e6;strokeColor=#ffa94d;fontSize=11;align=center;" vertex="1" parent="1">
+          <mxGeometry x="280" y="600" width="200" height="140" as="geometry" />
+        </mxCell>
+
+        <mxCell id="dharani" value="Dharani&#10;Gold layer owner&#10;&#10;Stretch only (Wk 11-12)&#10;If validator extends to gold" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff4e6;strokeColor=#ffa94d;fontSize=11;align=center;" vertex="1" parent="1">
+          <mxGeometry x="520" y="600" width="180" height="120" as="geometry" />
+        </mxCell>
+
+        <mxCell id="dean" value="Dean&#10;Senior developer&#10;&#10;Code review,&#10;technical questions&#10;Ad-hoc, when stuck" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f3f0ff;strokeColor=#9775fa;fontSize=11;align=center;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="740" y="600" width="180" height="140" as="geometry" />
+        </mxCell>
+
+        <mxCell id="infra" value="Sreeni &amp; Kevin&#10;AWS / Azure / GitHub&#10;&#10;Infrastructure (Snowflake,&#10;networking, IAM, Actions)&#10;Ad-hoc, when blocked" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f3f0ff;strokeColor=#9775fa;fontSize=11;align=center;" vertex="1" parent="1">
+          <mxGeometry x="960" y="600" width="200" height="140" as="geometry" />
+        </mxCell>
+
+        <mxCell id="e-mgr" style="endArrow=none;html=1;strokeColor=#339af0;strokeWidth=2;" edge="1" parent="1" source="mgr" target="intern">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-spandana" style="endArrow=none;html=1;strokeColor=#51cf66;strokeWidth=3;" edge="1" parent="1" source="spandana" target="intern">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-spandana-label" value="primary" style="text;html=1;align=center;verticalAlign=middle;fontSize=10;fontStyle=2;fillColor=#ffffff;strokeColor=none;" vertex="1" parent="1">
+          <mxGeometry x="500" y="350" width="60" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="e-manu" style="endArrow=none;html=1;strokeColor=#51cf66;strokeWidth=2;" edge="1" parent="1" source="manu" target="intern">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="e-john" style="endArrow=none;html=1;strokeColor=#ffa94d;strokeWidth=2;dashed=1;" edge="1" parent="1" source="john" target="intern">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-dmo" style="endArrow=none;html=1;strokeColor=#ffa94d;strokeWidth=2;dashed=1;" edge="1" parent="1" source="dmo" target="intern">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-dharani" style="endArrow=none;html=1;strokeColor=#ffa94d;strokeWidth=2;dashed=1;" edge="1" parent="1" source="dharani" target="intern">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-dean" style="endArrow=none;html=1;strokeColor=#9775fa;strokeWidth=2;dashed=1;" edge="1" parent="1" source="dean" target="intern">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-infra" style="endArrow=none;html=1;strokeColor=#9775fa;strokeWidth=2;dashed=1;" edge="1" parent="1" source="infra" target="intern">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="legend-box" value="" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f8f9fa;strokeColor=#dee2e6;" vertex="1" parent="1">
+          <mxGeometry x="40" y="800" width="1320" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="legend-title" value="Legend" style="text;html=1;align=left;verticalAlign=middle;fontSize=12;fontStyle=1;fillColor=none;strokeColor=none;" vertex="1" parent="1">
+          <mxGeometry x="60" y="805" width="100" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="leg-sw1" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e7f5ff;strokeColor=#339af0;" vertex="1" parent="1">
+          <mxGeometry x="60" y="835" width="20" height="14" as="geometry" />
+        </mxCell>
+        <mxCell id="leg-l1" value="Manager (career, scope)" style="text;html=1;align=left;verticalAlign=middle;fontSize=10;fillColor=none;strokeColor=none;" vertex="1" parent="1">
+          <mxGeometry x="85" y="830" width="200" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="leg-sw2" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d3f9d8;strokeColor=#51cf66;" vertex="1" parent="1">
+          <mxGeometry x="300" y="835" width="20" height="14" as="geometry" />
+        </mxCell>
+        <mxCell id="leg-l2" value="Mentors (regular touchpoint)" style="text;html=1;align=left;verticalAlign=middle;fontSize=10;fillColor=none;strokeColor=none;" vertex="1" parent="1">
+          <mxGeometry x="325" y="830" width="220" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="leg-sw3" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff4e6;strokeColor=#ffa94d;" vertex="1" parent="1">
+          <mxGeometry x="560" y="835" width="20" height="14" as="geometry" />
+        </mxCell>
+        <mxCell id="leg-l3" value="Stakeholders (validator depends on them)" style="text;html=1;align=left;verticalAlign=middle;fontSize=10;fillColor=none;strokeColor=none;" vertex="1" parent="1">
+          <mxGeometry x="585" y="830" width="280" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="leg-sw4" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f3f0ff;strokeColor=#9775fa;" vertex="1" parent="1">
+          <mxGeometry x="880" y="835" width="20" height="14" as="geometry" />
+        </mxCell>
+        <mxCell id="leg-l4" value="Ad-hoc resource (reach out when stuck)" style="text;html=1;align=left;verticalAlign=middle;fontSize=10;fillColor=none;strokeColor=none;" vertex="1" parent="1">
+          <mxGeometry x="905" y="830" width="280" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="leg-row2" value="Solid line = regular meeting cadence.  Dashed line = as-needed.  Bold green line to Spandana = primary day-to-day contact." style="text;html=1;align=left;verticalAlign=middle;fontSize=10;fontStyle=2;fillColor=none;strokeColor=none;" vertex="1" parent="1">
+          <mxGeometry x="60" y="860" width="1280" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="leg-row3" value="Yellow dashed box = design sign-off owned by Mark and Manu (end Wk 4: validator design; start Wk 9: target DB pick). Spandana joins the conversations but doesn't co-own the call." style="text;html=1;align=left;verticalAlign=middle;fontSize=10;fontStyle=2;fillColor=none;strokeColor=none;" vertex="1" parent="1">
+          <mxGeometry x="60" y="880" width="1280" height="20" as="geometry" />
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

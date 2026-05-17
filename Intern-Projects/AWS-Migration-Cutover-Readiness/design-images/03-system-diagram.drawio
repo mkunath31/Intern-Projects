@@ -1,0 +1,133 @@
+<mxfile host="app.diagrams.net" agent="Mozilla/5.0" version="24.7.17">
+  <diagram id="diagram-03-system" name="System Diagram">
+    <mxGraphModel dx="1400" dy="900" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1400" pageHeight="940" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <mxCell id="title" value="System Diagram — Data Flow and Where the Intern's Work Plugs In" style="text;html=1;align=center;verticalAlign=middle;fontSize=18;fontStyle=1;fillColor=none;strokeColor=none;" vertex="1" parent="1">
+          <mxGeometry x="40" y="20" width="1320" height="30" as="geometry" />
+        </mxCell>
+
+        <!-- ============ TOP ROW: data flow ============ -->
+
+        <mxCell id="azure-sf" value="Azure Snowflake&#10;(source)&#10;&#10;Existing UDP databases" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#dbe4ff;strokeColor=#4263eb;fontSize=12;align=center;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="60" y="120" width="180" height="160" as="geometry" />
+        </mxCell>
+
+        <mxCell id="replication" value="Snowflake Replication&#10;(owner: John Thomas)&#10;&#10;Out of intern scope" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff4e6;strokeColor=#ffa94d;fontSize=12;align=center;verticalAlign=middle;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="300" y="160" width="200" height="80" as="geometry" />
+        </mxCell>
+
+        <!-- AWS Snowflake container with silver and gold sub-blocks -->
+        <mxCell id="aws-sf-container" value="AWS Snowflake&#10;(target — new database, new structure + naming standards)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff9db;strokeColor=#f08c00;fontSize=12;align=center;verticalAlign=top;fontStyle=1;collapsible=0;" vertex="1" parent="1">
+          <mxGeometry x="560" y="100" width="320" height="200" as="geometry" />
+        </mxCell>
+        <mxCell id="aws-silver" value="Silver Layer&#10;(Manu)&#10;&#10;IN SCOPE — validator focus" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffec99;strokeColor=#f59f00;strokeWidth=2;fontSize=11;align=center;verticalAlign=middle;" vertex="1" parent="aws-sf-container">
+          <mxGeometry x="20" y="40" width="135" height="140" as="geometry" />
+        </mxCell>
+        <mxCell id="aws-gold" value="Gold Layer&#10;(Dharani)&#10;&#10;STRETCH only" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f8f9fa;strokeColor=#adb5bd;fontSize=11;align=center;verticalAlign=middle;dashed=1;" vertex="1" parent="aws-sf-container">
+          <mxGeometry x="165" y="40" width="135" height="140" as="geometry" />
+        </mxCell>
+
+        <mxCell id="mapping" value="Source → Target Mapping&#10;(YAML / JSON config)&#10;&#10;Owners: Dan, Brian, Mike&#10;Available by Week 5" style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;darkOpacity=0.05;fillColor=#ffec99;strokeColor=#f59f00;fontSize=11;align=center;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="930" y="120" width="200" height="160" as="geometry" />
+        </mxCell>
+
+        <mxCell id="e-azure-rep" style="endArrow=classic;html=1;exitX=1;exitY=0.5;entryX=0;entryY=0.5;strokeColor=#495057;strokeWidth=2;" edge="1" parent="1" source="azure-sf" target="replication">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-rep-aws" style="endArrow=classic;html=1;exitX=1;exitY=0.5;entryX=0;entryY=0.5;strokeColor=#495057;strokeWidth=2;" edge="1" parent="1" source="replication" target="aws-sf-container">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- ============ VALIDATOR ============ -->
+
+        <mxCell id="validator" value="Parity Validator (Part 2)&#10;&#10;Reads mapping config&#10;Queries silver layer on both sides&#10;Produces HTML report" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff4e6;strokeColor=#fd7e14;strokeWidth=3;fontSize=13;align=center;verticalAlign=middle;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="430" y="430" width="300" height="130" as="geometry" />
+        </mxCell>
+
+        <mxCell id="e-azure-val" style="endArrow=classic;html=1;exitX=0.5;exitY=1;entryX=0.2;entryY=0;strokeColor=#4263eb;strokeWidth=2;dashed=1;" edge="1" parent="1" source="azure-sf" target="validator">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-azure-val-lbl" value="reads" style="text;html=1;align=center;verticalAlign=middle;fontSize=10;fontStyle=2;fillColor=#ffffff;strokeColor=none;" vertex="1" parent="1">
+          <mxGeometry x="270" y="340" width="50" height="20" as="geometry" />
+        </mxCell>
+
+        <mxCell id="e-aws-val" style="endArrow=classic;html=1;exitX=0.5;exitY=1;entryX=0.8;entryY=0;strokeColor=#f08c00;strokeWidth=2;dashed=1;" edge="1" parent="1" source="aws-silver" target="validator">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-aws-val-lbl" value="reads silver" style="text;html=1;align=center;verticalAlign=middle;fontSize=10;fontStyle=2;fillColor=#ffffff;strokeColor=none;" vertex="1" parent="1">
+          <mxGeometry x="660" y="340" width="80" height="20" as="geometry" />
+        </mxCell>
+
+        <mxCell id="e-map-val" style="endArrow=classic;html=1;exitX=0;exitY=0.5;entryX=1;entryY=0.3;strokeColor=#f59f00;strokeWidth=2;dashed=1;" edge="1" parent="1" source="mapping" target="validator">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-map-val-lbl" value="consumes" style="text;html=1;align=center;verticalAlign=middle;fontSize=10;fontStyle=2;fillColor=#ffffff;strokeColor=none;" vertex="1" parent="1">
+          <mxGeometry x="800" y="400" width="70" height="20" as="geometry" />
+        </mxCell>
+
+        <!-- Validator report -->
+        <mxCell id="report" value="Parity Report (HTML)" style="shape=document;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;fillColor=#f8f9fa;strokeColor=#868e96;fontSize=11;align=center;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="870" y="460" width="180" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="e-val-rep" style="endArrow=classic;html=1;exitX=1;exitY=0.5;entryX=0;entryY=0.5;strokeColor=#fd7e14;strokeWidth=2;" edge="1" parent="1" source="validator" target="report">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- ============ LEFT: PART 1 dashboard ============ -->
+
+        <mxCell id="jira" value="Jira&#10;(UDPO project)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e7f5ff;strokeColor=#1c7ed6;fontSize=12;align=center;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="60" y="450" width="160" height="80" as="geometry" />
+        </mxCell>
+
+        <mxCell id="dashboard" value="Migration Dashboard (Part 1)&#10;&#10;Pulls UDPO issues&#10;Groups by database&#10;Static HTML" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e7f5ff;strokeColor=#1c7ed6;strokeWidth=3;fontSize=13;align=center;verticalAlign=middle;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="60" y="570" width="240" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="e-jira-dash" style="endArrow=classic;html=1;exitX=0.5;exitY=1;entryX=0.5;entryY=0;strokeColor=#1c7ed6;strokeWidth=2;" edge="1" parent="1" source="jira" target="dashboard">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-jira-dash-lbl" value="REST API" style="text;html=1;align=center;verticalAlign=middle;fontSize=10;fontStyle=2;fillColor=#ffffff;strokeColor=none;" vertex="1" parent="1">
+          <mxGeometry x="155" y="530" width="70" height="20" as="geometry" />
+        </mxCell>
+
+        <!-- ============ BOTTOM: GH Action + Confluence ============ -->
+
+        <mxCell id="gha" value="GitHub Actions&#10;&#10;Reusable push action (Part 1)&#10;Scheduled refresh" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f3f0ff;strokeColor=#7048e8;fontSize=12;align=center;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="430" y="730" width="300" height="100" as="geometry" />
+        </mxCell>
+
+        <mxCell id="confluence" value="Confluence&#10;(LSE space)&#10;&#10;Dashboard page&#10;Validator reports&#10;Project brief, retros" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d3f9d8;strokeColor=#37b24d;fontSize=12;align=center;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="870" y="710" width="220" height="140" as="geometry" />
+        </mxCell>
+
+        <mxCell id="e-dash-gha" style="endArrow=classic;html=1;exitX=0.5;exitY=1;entryX=0.25;entryY=0;strokeColor=#7048e8;strokeWidth=2;" edge="1" parent="1" source="dashboard" target="gha">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-val-gha" style="endArrow=classic;html=1;exitX=0.5;exitY=1;entryX=0.5;entryY=0;strokeColor=#7048e8;strokeWidth=2;" edge="1" parent="1" source="validator" target="gha">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-rep-gha" style="endArrow=classic;html=1;exitX=0.5;exitY=1;entryX=0.75;entryY=0;strokeColor=#868e96;strokeWidth=2;" edge="1" parent="1" source="report" target="gha">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="e-gha-conf" style="endArrow=classic;html=1;exitX=1;exitY=0.5;entryX=0;entryY=0.5;strokeColor=#37b24d;strokeWidth=2;" edge="1" parent="1" source="gha" target="confluence">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-gha-conf-lbl" value="push via reusable Action" style="text;html=1;align=center;verticalAlign=middle;fontSize=10;fontStyle=2;fillColor=#ffffff;strokeColor=none;" vertex="1" parent="1">
+          <mxGeometry x="740" y="760" width="140" height="20" as="geometry" />
+        </mxCell>
+
+        <!-- Legend -->
+        <mxCell id="legend-box" value="" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f8f9fa;strokeColor=#dee2e6;" vertex="1" parent="1">
+          <mxGeometry x="40" y="870" width="1320" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="legend-text" value="Bold borders = intern deliverables.    Orange box (Replication) = out of intern scope, owned by John Thomas.    Silver layer (yellow, in scope) vs Gold layer (gray dashed, stretch).    Dashed arrows into the validator = data and config the validator consumes." style="text;html=1;align=center;verticalAlign=middle;fontSize=11;fillColor=none;strokeColor=none;" vertex="1" parent="1">
+          <mxGeometry x="40" y="870" width="1320" height="50" as="geometry" />
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

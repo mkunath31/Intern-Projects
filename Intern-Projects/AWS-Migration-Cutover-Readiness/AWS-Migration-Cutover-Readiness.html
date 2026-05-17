@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Intern Project Brief — AWS Migration Cutover Readiness</title>
+<style>
+  body { font-family: -apple-system, "Segoe UI", Roboto, sans-serif; max-width: 900px; margin: 24px auto; padding: 0 16px; color: #212529; line-height: 1.5; }
+  h1 { border-bottom: 2px solid #dee2e6; padding-bottom: 8px; }
+  h2 { margin-top: 28px; }
+  h3 { margin-top: 20px; color: #495057; }
+  table { border-collapse: collapse; width: 100%; margin: 12px 0; }
+  th, td { border: 1px solid #dee2e6; padding: 6px 10px; text-align: left; vertical-align: top; }
+  th { background: #f8f9fa; }
+  code { background: #f1f3f5; padding: 1px 5px; border-radius: 3px; font-size: 0.9em; }
+  .meta { color: #6c757d; font-size: 0.9em; }
+  .callout { background: #f8f9fa; border-left: 3px solid #6c757d; padding: 10px 14px; margin: 14px 0; }
+</style>
+</head>
+<body>
+
+<h1 id="overview">Overview</h1>
+<p class="meta">Team: LS-UDP · Jira board: UDPO · Duration: 12 weeks · Status: DRAFT for review</p>
+
+<p>
+Data movement from Azure Snowflake to AWS Snowflake is handled by Snowflake replication, owned by
+John Thomas. The replicated data lands in a new AWS database with its own structure and naming standards,
+so source and target are not 1:1. The intern's job is not to move data; it's to give the team confidence
+the replicated data matches its source under that mapping, and to make the migration's status legible.
+They will build a Jira-backed migration dashboard, package the existing Confluence push script as a
+reusable GitHub Action, build a mapping-driven parity validator, and use that validator to sign off on
+the replication of one database under UDPO-7851 / UDPO-7866.
+</p>
+
+<figure style="margin:16px 0;text-align:center;">
+  <img src="design-images/01-project-flow.drawio.png" alt="Diagram 01 — Intern Project Flow"
+       style="max-width:100%;border:1px solid #dee2e6;border-radius:4px;">
+  <figcaption style="font-size:0.85em;color:#6c757d;margin-top:8px;font-style:italic;">
+    Diagram 01 — Intern project flow across the 12-week internship
+  </figcaption>
+</figure>
+
+<h2>Why this project</h2>
+<p>
+The migration is the team's largest in-flight initiative. Today, cutover readiness is tracked by hand on
+Confluence pages (Progress Tracker, Open Architecture Questions, weekly WSRs) and parity is verified ad hoc.
+Both gaps are real, intern-sized, and produce tools the team keeps using after the internship ends.
+</p>
+<p>
+The project also gives the intern a working knowledge of Snowflake, the EDW data model, and the Jira workflow
+by week 6, which is the prerequisite for being useful on any UDPO ticket. By week 10 they should be able to
+read a LAB or OBSERVATION bug ticket and understand what's actually broken.
+</p>
+
+<h2>Scope</h2>
+
+<h3>Part 1 — Migration tracker dashboard (weeks 1–4)</h3>
+<p>
+A web page that auto-refreshes from Jira and renders the current state of the migration. Replaces or
+augments the hand-maintained Progress Tracker page.
+</p>
+<ul>
+  <li>Pulls all UDPO issues under epics UDPO-7292, UDPO-7851, UDPO-7866 via the Jira REST API.</li>
+  <li>Groups by database (VE_PROD, CP_PROD, UDP_PROD_REF_DATA, PF_PROD, etc.) and shows status, owner, open blockers, open architecture questions linked to that database.</li>
+  <li>Renders as static HTML pushed to Confluence on a schedule via GitHub Actions.</li>
+  <li>As part of this work, the intern packages the team's existing Confluence push script as a reusable GitHub Action. Today the push is run by hand from a project folder; this turns it into a workflow other repos can call.</li>
+</ul>
+<p><strong>Definition of done:</strong> dashboard refreshes on a schedule via GitHub Actions, the push step
+runs through the reusable action, the team uses the dashboard instead of the hand-maintained tracker for
+at least one standup, and the intern has documented both the workflow and the action in the team runbook.</p>
+
+<h3>Part 2 — Mapping-driven parity validator (weeks 5–8)</h3>
+<p>
+A Python tool that confirms data in the new AWS database matches its Azure source under the team's
+source-to-target mapping. The mapping is a config file (YAML or JSON) maintained by the data model owners
+(Dan Barkman, Brian Burkman, Mike Immrie) and consumed by the validator. The intern does not author the
+mapping; they consume it.
+</p>
+<p>
+The validator targets the <strong>silver layer first</strong> (Manu's domain). If time allows in weeks 11–12,
+it can be extended to the gold layer (Dharani's domain) as a stretch. Silver is the right starting point
+because parity matters most where downstream consumers read; gold is derived, so silver-layer parity bugs
+will propagate upward and need to be caught at silver anyway.
+</p>
+<p>The validator handles three mapping shapes:</p>
+<ul>
+  <li><strong>1:1 with renames.</strong> Source table maps to one target table, columns may be renamed or retyped. Most common case.</li>
+  <li><strong>1:N (split).</strong> Source table maps to multiple target tables. Validator checks each target slice individually and the union.</li>
+  <li><strong>N:1 (merge).</strong> Multiple source tables map to one target table. Validator checks each source contribution against the relevant target subset.</li>
+</ul>
+<p>For each mapped pair, the validator checks:</p>
+<ul>
+  <li>Mapping coverage: every source column has a defined target (or is explicitly marked as dropped). Every target column has a defined source (or is explicitly marked as derived).</li>
+  <li>Type compatibility: mapped column types are compatible. Promotions (NUMBER → NUMBER with larger precision, VARCHAR → VARCHAR with larger length) are fine; lossy mappings are flagged.</li>
+  <li>Row count comparison, scoped by the mapping shape.</li>
+  <li>Null-rate and distinct-count per mapped column.</li>
+  <li>Sampled hash check on a stratified row sample using the mapping to align rows.</li>
+  <li>Replication lag check (max <code>updated_at</code> or equivalent watermark on each side).</li>
+  <li>HTML report output that lands on Confluence next to the dashboard.</li>
+</ul>
+<p>
+Before any code, the intern meets with John Thomas to understand how the replication is configured, how
+the target database structure is being decided, what guarantees the replication makes, and what failure
+modes John already monitors. The validator should complement John's monitoring, not duplicate it.
+</p>
+<p><strong>Definition of done:</strong> the validator runs against at least three replicated tables
+covering at least two of the three mapping shapes, John and Manu have reviewed the report format, and the
+validator is wired into the cutover sign-off checklist for replicated databases.</p>
+
+<h3>Part 3 — Sign off one database's replication (weeks 9–12)</h3>
+<p>
+Paired with Spandana and coordinating with John Thomas, the intern uses the validator from Part 2 to
+sign off replication parity on one database, observes the cutover, and writes a retro.
+</p>
+<ul>
+  <li>Pick the database in the design sign-off (Mark + Manu) at the start of week 9. Coordinate with John. Target: low-risk, well-scoped, silver-layer, no open architecture questions.</li>
+  <li>Run the validator pre-cutover. Resolve any discrepancies with John before sign-off.</li>
+  <li>Attend the cutover. Re-run the validator post-cutover. Attach the report to the closing ticket.</li>
+  <li>Write a retro: what the validator caught, what it missed, what to add in v2, and any patterns worth feeding back into John's replication monitoring.</li>
+  <li>Stretch (weeks 11–12 if cutover slot doesn't materialize, or in parallel if it does): extend the validator to a gold-layer table with Dharani's input.</li>
+</ul>
+<p><strong>Definition of done:</strong> validator reports attached to one database's cutover ticket, retro
+published on Confluence.</p>
+
+<h2>Out of scope</h2>
+<ul>
+  <li>The replication itself. John Thomas owns Azure-to-AWS Snowflake replication; the intern verifies its output, not the pipeline.</li>
+  <li>Defining the source-to-target mapping or the new database's structure and naming standards. The intern consumes the mapping; they do not author it.</li>
+  <li>Anything touching PHI in Slack or other channels.</li>
+  <li>Pipeline rewrites or new ingestion sources (Practice Fusion, Athena, eCW, Office Ally — those are owned by the existing UDPO stories).</li>
+  <li>Re-architecting the Two-step FTP/Blob load (UDPO-7851 has an open architecture question here; intern shouldn't own that decision).</li>
+  <li>Power BI re-pointing (UDPO-7848 is its own track).</li>
+</ul>
+
+<h2>Stack</h2>
+<table>
+  <thead><tr><th>Area</th><th>Tools</th></tr></thead>
+  <tbody>
+    <tr><td>Language</td><td>Python 3</td></tr>
+    <tr><td>Warehouse</td><td>Snowflake (Azure and AWS), Snowflake Python connector</td></tr>
+    <tr><td>Source of truth</td><td>Jira REST API, Confluence storage format</td></tr>
+    <tr><td>Hosting / scheduling</td><td>GitHub Actions</td></tr>
+    <tr><td>Output</td><td>HTML, pushed via the team's existing Confluence push script</td></tr>
+  </tbody>
+</table>
+
+<figure style="margin:16px 0;text-align:center;">
+  <img src="design-images/03-system-diagram.drawio.png" alt="Diagram 03 — System Diagram"
+       style="max-width:100%;border:1px solid #dee2e6;border-radius:4px;">
+  <figcaption style="font-size:0.85em;color:#6c757d;margin-top:8px;font-style:italic;">
+    Diagram 03 — Data flow and where the intern's deliverables plug in
+  </figcaption>
+</figure>
+
+<h2>Week-by-week milestones</h2>
+<table>
+  <thead><tr><th>Week</th><th>Milestone</th><th>Mentor checkpoint</th></tr></thead>
+  <tbody>
+    <tr><td>1</td><td>Onboarding, access (Jira, Snowflake dev, Confluence, GitHub). Read the Progress Tracker, Open Architecture Questions, and the V2 epic UDPO-7292.</td><td>End-of-week 1:1, confirm access</td></tr>
+    <tr><td>2</td><td>Jira API spike. Pull all UDPO issues under the migration epics into a local script. Sketch the dashboard data model.</td><td>Review the data model with mentor</td></tr>
+    <tr><td>3</td><td>Dashboard v1 rendering locally. Reviewed by mentor.</td><td>Demo to mentor</td></tr>
+    <tr><td>4</td><td>Dashboard scheduled and pushed to Confluence. Documented in runbook. Meet with John Thomas to learn the replication setup. Meet with Dan, Brian, and Mike to learn the mapping and naming standards. <strong>Validator design sign-off by Mark and Manu before week 5 work starts.</strong></td><td>Demo dashboard to team in standup. Spandana joins the John and data-model meetings.</td></tr>
+    <tr><td>5</td><td>Consume the source-to-target mapping. Validator spike on a silver-layer 1:1 mapped pair with renames, checking row count and schema mapping coverage.</td><td>Review approach with Spandana and John. Confirm mapping is available and stable enough to build against.</td></tr>
+    <tr><td>6</td><td>Validator v1 on silver: 1:1 case complete — coverage, type compatibility, row count, null rate, distinct count, replication lag check. Tested against one 1:1 mapped silver table.</td><td>Code review with Spandana. Reach out to Dean if anything is structurally unclear.</td></tr>
+    <tr><td>7</td><td>Add sampled hash check. Extend to handle 1:N (split) and N:1 (merge) mapping shapes. Run against three replicated silver tables covering at least two shapes.</td><td>Review reports with Manu and John</td></tr>
+    <tr><td>8</td><td>Validator wired into the cutover sign-off checklist. Documented, including how to add a new mapping to the config.</td><td>Demo to team</td></tr>
+    <tr><td>9</td><td><strong>Target DB pick signed off by Mark and Manu</strong>, coordinating with John. Plan the sign-off.</td><td>Pick reviewed before any prod access</td></tr>
+    <tr><td>10</td><td>Pre-cutover: run the validator against the target database, work through any discrepancies with John.</td><td>Pre-cutover sign-off review</td></tr>
+    <tr><td>11</td><td>Attend cutover. Re-run validator post-cutover. Close the ticket.</td><td>Cutover observed</td></tr>
+    <tr><td>12</td><td>Retro, internship write-up, knowledge transfer to whoever inherits the dashboard and validator.</td><td>Final demo to broader team</td></tr>
+  </tbody>
+</table>
+
+<h2>Success criteria</h2>
+<ul>
+  <li>Dashboard is the team's primary reference for migration status by week 5.</li>
+  <li>Validator is part of the replication sign-off checklist by week 8.</li>
+  <li>Validator has been used to sign off replication parity on one database by week 12.</li>
+  <li>The intern can read and triage a UDPO bug on LAB / OBSERVATION / CLINICAL_PROCEDURE without help by week 10.</li>
+</ul>
+
+<h2>Risks and how we'll manage them</h2>
+<table>
+  <thead><tr><th>Risk</th><th>Mitigation</th></tr></thead>
+  <tbody>
+    <tr>
+      <td>Access delays (Snowflake, Jira API, Confluence write, push-script repo) eat week 1.</td>
+      <td>Spandana files access tickets the week before start and confirms all access on day 1.</td>
+    </tr>
+    <tr>
+      <td>Security training competes with project time, especially in weeks 1–2.</td>
+      <td>Plan for it. Week 1 milestones are deliberately light (onboarding + reading) to absorb training load.</td>
+    </tr>
+    <tr>
+      <td>The source-to-target mapping isn't ready by week 5.</td>
+      <td>Hard dependency. Spandana checks in on mapping status in weeks 3 and 4. If it slips, the intern works on the dashboard's polish, the GitHub Action, or the documentation runbook instead of starting on the validator blind. Don't let them build against a guess.</td>
+    </tr>
+    <tr>
+      <td>Mapping is unstable through weeks 5–8 (definitions keep changing).</td>
+      <td>Expected, and the validator design absorbs this: mapping is a config file, not code. The intern works against whatever version is current and refreshes the report when the config changes. They do not chase mapping changes inside the validator's own logic.</td>
+    </tr>
+    <tr>
+      <td>A target structure shows up that doesn't fit 1:1, 1:N, or N:1 (e.g. M:N joins, derived/calculated columns).</td>
+      <td>The validator flags these as "out of validator scope" in the report rather than silently failing. The intern documents what's not covered. Closing those gaps becomes a v2 ticket, not an intern problem.</td>
+    </tr>
+    <tr>
+      <td>The validator overlaps with monitoring John already has, and feels like an audit.</td>
+      <td>The week-4 meeting with John is for alignment, not announcement. Intern shows up to learn what John already checks and designs the validator to fill the gap, not duplicate the work.</td>
+    </tr>
+    <tr>
+      <td>Intern picks a database for Part 3 that has hidden complexity (open architecture question, unusual upstream).</td>
+      <td>Spandana, Manu, and John pick the candidate together in week 9. Anything tied to an open architecture question on the tracker is off-limits.</td>
+    </tr>
+    <tr>
+      <td>Validator surfaces real production discrepancies on replicated tables.</td>
+      <td>Good — that's the point. Escalate to John and the database owner, log as a separate ticket. Don't let it derail the intern timeline.</td>
+    </tr>
+    <tr>
+      <td>Part 3 sign-off slips past week 12 because the replication cutover slips.</td>
+      <td>Acceptable. Parts 1 and 2 are independently valuable; the internship is a success at the end of week 8.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2>Mentorship model</h2>
+<ul>
+  <li>Manager: weekly 1:1 with the intern. Owns career conversations, scope decisions, and demo sign-off.</li>
+  <li>Day-to-day support: Spandana. First point of contact for questions, unblocks, and code review.</li>
+  <li>Validator design and target-database pick: owned jointly by Mark Kunath (manager) and Manu Verma. Design sign-off at end of week 4, before validator work starts. DB pick at start of week 9. Spandana joins the conversations but doesn't co-own the decision.</li>
+  <li>Senior developer / code review: Dean. Ad-hoc resource for technical questions and deeper code review. Most experienced developer on the team. Intern reaches out when stuck or when Spandana wants a second opinion.</li>
+  <li>Silver layer owner: Manu Verma. Stakeholder for the validator's silver-layer checks (weeks 5–10). Reviews findings and helps the intern make sense of silver-layer discrepancies. Weekly 30-minute review starting week 5.</li>
+  <li>Gold layer owner: Dharani. Stakeholder if and when the validator extends to gold (stretch goal in weeks 11–12).</li>
+  <li>Replication owner: John Thomas. Stakeholder for the validator — the intern works with him from week 4 onward to understand the replication and align on what the validator should check.</li>
+  <li>Data model owners: Dan Barkman, Brian Burkman, Mike Immrie. Own the source-to-target mapping and the new database's structure and naming standards. The intern consumes their mapping; brief touchpoint in week 4, and again when shape questions come up.</li>
+  <li>Infrastructure (AWS, Azure, GitHub / GitHub Actions): Sreeni and Kevin. Ad-hoc resource for infrastructure questions including Snowflake account topology, networking, IAM, and the Actions setup.</li>
+  <li>Standup: intern joins from week 2.</li>
+  <li>Demo cadence: end of weeks 4, 8, 12 to the broader team.</li>
+</ul>
+
+<figure style="margin:16px 0;text-align:center;">
+  <img src="design-images/02-stakeholder-map.drawio.png" alt="Diagram 02 — Stakeholder Map"
+       style="max-width:100%;border:1px solid #dee2e6;border-radius:4px;">
+  <figcaption style="font-size:0.85em;color:#6c757d;margin-top:8px;font-style:italic;">
+    Diagram 02 — Who the intern talks to for what
+  </figcaption>
+</figure>
+
+<h2>Security training (parallel track)</h2>
+<p>
+The intern takes Veradigm's security learning sessions in parallel with the project work. This is not
+optional or scheduled around the project — block time for it on the calendar from week 1.
+</p>
+<ul>
+  <li>Expect 2–4 hours per week on training, more in the first two weeks.</li>
+  <li>HIPAA / PHI handling must be completed before any access to production Snowflake (week 9 at the latest, ideally by week 6).</li>
+  <li>Spandana confirms training status before granting prod access for Part 3.</li>
+</ul>
+
+<h2>Open questions for review</h2>
+<ul>
+  <li>Where will the source-to-target mapping live (which repo, which format) and what's the cadence for updates? Dan, Brian, and Mike own the content; we need a path for the validator to read it.</li>
+  <li>Has John been told about this scope? He's a stakeholder, not a participant, but the validator only works if he's bought in. A 30-minute intro before the intern starts is worth doing. Same goes for Dan, Brian, and Mike — they need to know an intern is going to depend on their mapping.</li>
+  <li>Is there a security review required before the intern gets read access to production Snowflake, beyond the standard HIPAA / PHI training?</li>
+  <li>Where does the existing Confluence push script live today, and who owns it? The intern will need write access to that repo (or a fork) for the GitHub Action work in Part 1.</li>
+</ul>
+
+</body>
+</html>

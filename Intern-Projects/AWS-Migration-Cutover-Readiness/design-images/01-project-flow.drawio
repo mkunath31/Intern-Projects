@@ -1,0 +1,103 @@
+<mxfile host="app.diagrams.net" agent="Mozilla/5.0" version="24.7.17">
+  <diagram id="diagram-01-project-flow" name="Project Flow">
+    <mxGraphModel dx="1400" dy="900" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1400" pageHeight="700" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <!-- Title -->
+        <mxCell id="title" value="Intern Project Flow — 12 Weeks" style="text;html=1;align=center;verticalAlign=middle;fontSize=18;fontStyle=1;fillColor=none;strokeColor=none;" vertex="1" parent="1">
+          <mxGeometry x="40" y="20" width="1320" height="30" as="geometry" />
+        </mxCell>
+
+        <!-- Week markers row -->
+        <mxCell id="weeks-bar" value="" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f8f9fa;strokeColor=#dee2e6;" vertex="1" parent="1">
+          <mxGeometry x="40" y="70" width="1320" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="weeks-label" value="Week 1     Week 2     Week 3     Week 4     Week 5     Week 6     Week 7     Week 8     Week 9     Week 10     Week 11     Week 12" style="text;html=1;align=center;verticalAlign=middle;fontSize=11;fillColor=none;strokeColor=none;" vertex="1" parent="1">
+          <mxGeometry x="40" y="70" width="1320" height="30" as="geometry" />
+        </mxCell>
+
+        <!-- Part 1 swim lane -->
+        <mxCell id="part1-band" value="" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#e7f5ff;strokeColor=#74c0fc;" vertex="1" parent="1">
+          <mxGeometry x="40" y="130" width="440" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="part1-title" value="Part 1 — Migration Tracker Dashboard&#10;(Weeks 1–4)" style="text;html=1;align=center;verticalAlign=top;fontSize=13;fontStyle=1;fillColor=none;strokeColor=none;" vertex="1" parent="1">
+          <mxGeometry x="40" y="138" width="440" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="part1-detail" value="• Jira REST API pull&#10;• HTML dashboard pushed to Confluence&#10;• Existing push script → reusable GitHub Action&#10;• Scheduled via GitHub Actions" style="text;html=1;align=left;verticalAlign=middle;fontSize=11;fillColor=none;strokeColor=none;" vertex="1" parent="1">
+          <mxGeometry x="60" y="178" width="400" height="60" as="geometry" />
+        </mxCell>
+
+        <!-- Part 2 swim lane -->
+        <mxCell id="part2-band" value="" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#fff4e6;strokeColor=#ffa94d;" vertex="1" parent="1">
+          <mxGeometry x="480" y="130" width="440" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="part2-title" value="Part 2 — Mapping-Driven Parity Validator&#10;(Weeks 5–8)" style="text;html=1;align=center;verticalAlign=top;fontSize=13;fontStyle=1;fillColor=none;strokeColor=none;" vertex="1" parent="1">
+          <mxGeometry x="480" y="138" width="440" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="part2-detail" value="• Consumes mapping config (YAML/JSON)&#10;• Handles 1:1, 1:N, N:1 shapes&#10;• Coverage, type compat, row count, hash, lag&#10;• HTML report on Confluence" style="text;html=1;align=left;verticalAlign=middle;fontSize=11;fillColor=none;strokeColor=none;" vertex="1" parent="1">
+          <mxGeometry x="500" y="178" width="400" height="60" as="geometry" />
+        </mxCell>
+
+        <!-- Part 3 swim lane -->
+        <mxCell id="part3-band" value="" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f3f0ff;strokeColor=#9775fa;" vertex="1" parent="1">
+          <mxGeometry x="920" y="130" width="440" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="part3-title" value="Part 3 — Sign Off One Database&#10;(Weeks 9–12)" style="text;html=1;align=center;verticalAlign=top;fontSize=13;fontStyle=1;fillColor=none;strokeColor=none;" vertex="1" parent="1">
+          <mxGeometry x="920" y="138" width="440" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="part3-detail" value="• Pick DB with Spandana, Manu, John&#10;• Run validator pre-cutover&#10;• Observe cutover, re-run validator&#10;• Retro on Confluence" style="text;html=1;align=left;verticalAlign=middle;fontSize=11;fillColor=none;strokeColor=none;" vertex="1" parent="1">
+          <mxGeometry x="940" y="178" width="400" height="60" as="geometry" />
+        </mxCell>
+
+        <!-- Connecting arrows -->
+        <mxCell id="arrow-1-2" style="endArrow=classic;html=1;exitX=1;exitY=0.5;entryX=0;entryY=0.5;strokeColor=#495057;strokeWidth=2;" edge="1" parent="1" source="part1-band" target="part2-band">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="arrow-2-3" style="endArrow=classic;html=1;exitX=1;exitY=0.5;entryX=0;entryY=0.5;strokeColor=#495057;strokeWidth=2;" edge="1" parent="1" source="part2-band" target="part3-band">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Demo milestones -->
+        <mxCell id="demo-w4" value="Demo&#10;Week 4" style="ellipse;whiteSpace=wrap;html=1;fillColor=#d3f9d8;strokeColor=#51cf66;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="430" y="280" width="80" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="demo-w8" value="Demo&#10;Week 8" style="ellipse;whiteSpace=wrap;html=1;fillColor=#d3f9d8;strokeColor=#51cf66;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="870" y="280" width="80" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="demo-w12" value="Demo&#10;Week 12" style="ellipse;whiteSpace=wrap;html=1;fillColor=#d3f9d8;strokeColor=#51cf66;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="1300" y="280" width="80" height="60" as="geometry" />
+        </mxCell>
+
+        <!-- Parallel track: security training -->
+        <mxCell id="sec-band" value="Security training (parallel track) — HIPAA / PHI must complete before prod access" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#fff0f6;strokeColor=#f783ac;fontSize=12;align=center;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="40" y="380" width="1320" height="40" as="geometry" />
+        </mxCell>
+
+        <!-- Internship success bar -->
+        <mxCell id="success-label" value="Internship is a success at end of Week 8 (Parts 1 + 2 shipped). Part 3 is the stretch." style="text;html=1;align=center;verticalAlign=middle;fontSize=12;fontStyle=2;fillColor=none;strokeColor=none;" vertex="1" parent="1">
+          <mxGeometry x="40" y="440" width="1320" height="30" as="geometry" />
+        </mxCell>
+
+        <!-- Key deliverables -->
+        <mxCell id="deliv-title" value="Deliverables" style="text;html=1;align=left;verticalAlign=middle;fontSize=13;fontStyle=1;fillColor=none;strokeColor=none;" vertex="1" parent="1">
+          <mxGeometry x="40" y="490" width="200" height="25" as="geometry" />
+        </mxCell>
+        <mxCell id="deliv-1" value="1. Auto-refreshing migration dashboard on Confluence" style="text;html=1;align=left;verticalAlign=middle;fontSize=11;fillColor=none;strokeColor=none;" vertex="1" parent="1">
+          <mxGeometry x="60" y="520" width="600" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="deliv-2" value="2. Reusable Confluence-push GitHub Action" style="text;html=1;align=left;verticalAlign=middle;fontSize=11;fillColor=none;strokeColor=none;" vertex="1" parent="1">
+          <mxGeometry x="60" y="540" width="600" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="deliv-3" value="3. Mapping-driven parity validator, wired into cutover sign-off checklist" style="text;html=1;align=left;verticalAlign=middle;fontSize=11;fillColor=none;strokeColor=none;" vertex="1" parent="1">
+          <mxGeometry x="60" y="560" width="700" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="deliv-4" value="4. One database's replication signed off, with retro on Confluence (stretch)" style="text;html=1;align=left;verticalAlign=middle;fontSize=11;fillColor=none;strokeColor=none;" vertex="1" parent="1">
+          <mxGeometry x="60" y="580" width="700" height="20" as="geometry" />
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
