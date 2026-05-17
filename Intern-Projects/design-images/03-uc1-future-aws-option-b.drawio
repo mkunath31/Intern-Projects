@@ -1,0 +1,37 @@
+<mxGraphModel page="0" grid="0" connect="0" arrows="0" fold="0" move="1" resize="0" edit="0" rotatable="0">
+  <root>
+    <mxCell id="0"/>
+    <mxCell id="1" parent="0"/>
+
+    <!-- No VPC / no EC2 annotation -->
+    <mxCell id="10" value="&lt;b&gt;No VPC or EC2 required&lt;/b&gt;&lt;br&gt;Cloud-to-cloud connection — no gateway infrastructure" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontSize=11;dashed=1;" vertex="1" parent="1">
+      <mxGeometry x="310" y="275" width="280" height="55" as="geometry"/>
+    </mxCell>
+
+    <!-- Power BI Service -->
+    <mxCell id="2" value="&lt;b&gt;Power BI Service&lt;/b&gt;&lt;br&gt;(Microsoft Cloud)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=12;" vertex="1" parent="1">
+      <mxGeometry x="60" y="165" width="190" height="70" as="geometry"/>
+    </mxCell>
+
+    <!-- Snowflake Network Policy -->
+    <mxCell id="3" value="&lt;b&gt;Snowflake Network Policy&lt;/b&gt;&lt;br&gt;Snowflake-managed network rules&lt;br&gt;&lt;i&gt;auto-maintains Power BI Service IP allowlist&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=11;" vertex="1" parent="1">
+      <mxGeometry x="330" y="155" width="240" height="90" as="geometry"/>
+    </mxCell>
+
+    <!-- AWS Snowflake -->
+    <mxCell id="4" value="&lt;b&gt;AWS Snowflake&lt;/b&gt;&lt;br&gt;Public endpoint&lt;br&gt;(any edition)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=12;" vertex="1" parent="1">
+      <mxGeometry x="670" y="165" width="200" height="70" as="geometry"/>
+    </mxCell>
+
+    <!-- Edge: Power BI → Network Policy -->
+    <mxCell id="5" value="HTTPS port 443 (public internet / TLS)" style="edgeStyle=orthogonalEdgeStyle;fontSize=11;" edge="1" source="2" target="3" parent="1">
+      <mxGeometry relative="1" as="geometry"/>
+    </mxCell>
+
+    <!-- Edge: Network Policy → Snowflake -->
+    <mxCell id="6" value="allowed IPs pass through" style="edgeStyle=orthogonalEdgeStyle;fontSize=11;" edge="1" source="3" target="4" parent="1">
+      <mxGeometry relative="1" as="geometry"/>
+    </mxCell>
+
+  </root>
+</mxGraphModel>
