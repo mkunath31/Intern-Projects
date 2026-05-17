@@ -1,13 +1,13 @@
-# PowerBI-AWS Architecture Design
+# Intern-Projects Architecture Design
 
 Architecture documentation for migrating PowerBI data connectivity from Azure to AWS.
 
-**Confluence page**: https://veradigm.atlassian.net/wiki/spaces/LSE/pages/6726353073/PowerBI-AWS+Architecture+Design
+**Confluence page**: https://veradigm.atlassian.net/wiki/spaces/LSE/pages/6726353073/Intern-Projects+Architecture+Design
 
 ## Repository Structure
 
 ```
-PowerBi-AWS/
+Intern-Projects/
 ├── CLAUDE.md                              ← project rules (Claude AI instructions)
 ├── README.md                              ← this file
 ├── CONTRIBUTING.md                        ← how to set up Confluence credentials
