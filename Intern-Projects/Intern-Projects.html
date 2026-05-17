@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>PowerBI-AWS Architecture Design</title>
+<style>
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 960px; margin: 2rem auto; padding: 0 1rem; line-height: 1.6; color: #333; }
+h1, h2, h3 { color: #1a1a2e; border-bottom: 1px solid #eee; padding-bottom: 0.3em; }
+h1 { font-size: 1.8em; }
+h2 { font-size: 1.4em; }
+h3 { font-size: 1.2em; }
+table { border-collapse: collapse; width: 100%; margin: 1em 0; }
+th, td { border: 1px solid #ddd; padding: 8px 12px; text-align: left; }
+th { background-color: #f5f5f5; }
+code { background: #f4f4f4; padding: 2px 6px; border-radius: 3px; font-size: 0.9em; }
+pre { background: #f8f8f8; padding: 1em; border-radius: 5px; overflow-x: auto; }
+pre code { background: none; padding: 0; }
+blockquote { border-left: 4px solid #4a90d9; margin: 1em 0; padding: 0.5em 1em; background: #f0f7ff; }
+blockquote.warning { border-left-color: #d79b00; background: #fff8e6; }
+blockquote.critical { border-left-color: #b85450; background: #fdf0ef; }
+img { max-width: 100%; }
+nav ol { columns: 2; column-gap: 2em; padding-left: 1.5em; }
+nav ol li { margin-bottom: 0.3em; break-inside: avoid; }
+nav ul { list-style: disc; padding-left: 1.5em; margin: 0.2em 0 0.4em 0; }
+nav a { text-decoration: none; color: #4a90d9; }
+nav a:hover { text-decoration: underline; }
+</style>
+</head>
+<body>
+
+<hr />
+<p>origin: ai-assisted &nbsp;·&nbsp; author: Sreenivasa Rao Nunna &nbsp;·&nbsp; contributors: Claude (analysis, diagrams, structure) &nbsp;·&nbsp; created: 2026-05-06 &nbsp;·&nbsp; last-updated: 2026-05-06 &nbsp;·&nbsp; version: v1.0</p>
+<hr />
+
+<h1>PowerBI-AWS Architecture Design</h1>
+
+<nav>
+<ol>
+  <li><a href="#overview">Overview</a></li>
+  <li><a href="#uc1">Use Case 1: PowerBI to Snowflake — Private Connectivity</a>
+    <ul>
+      <li><a href="#uc1-current">Current Architecture (Azure)</a></li>
+      <li><a href="#uc1-future">Target Architecture (AWS)</a>
+        <ul>
+          <li><a href="#uc1-future-a">Option A — EC2 + AWS PrivateLink</a></li>
+          <li><a href="#uc1-future-b">Option B — Direct Connector, No Gateway</a></li>
+        </ul>
+      </li>
+      <li><a href="#uc1-differences">Option Comparison &amp; Migration Considerations</a></li>
+    </ul>
+  </li>
+  <li><a href="#open-questions">Open Questions &amp; Decisions</a></li>
+  <li><a href="#references">References</a></li>
+</ol>
+</nav>
+
+<hr />
+
+<h1 id="overview">Overview</h1>
+
+<p>
+Veradigm is migrating its cloud platform from Azure to AWS. This document captures the architecture design work required to replicate and modernise existing PowerBI connectivity patterns in the new AWS environment.
+</p>
+
+<p>
+For each use case, the document presents the <strong>current Azure architecture</strong>, the <strong>target AWS architecture</strong>, and the key differences and migration decisions that the team must resolve.
+</p>
+
+<blockquote>
+<strong>Confluence target:</strong> This document is the single source of truth published to
+<a href="https://veradigm.atlassian.net/wiki/spaces/LSE/pages/6726353073/PowerBI-AWS+Architecture+Design">LSE / PowerBI-AWS Architecture Design</a>.
+All edits should be made here and pushed via <code>push_to_confluence.py</code>.
+</blockquote>
+
+<h2>Scope</h2>
+<ul>
+  <li>PowerBI connectivity patterns — how Power BI reaches Snowflake securely</li>
+  <li>Private network design — replacing Azure Private Link with AWS PrivateLink equivalents</li>
+  <li>On-premises data gateway deployment — Azure VM → Amazon EC2</li>
+</ul>
+
+<h2>Out of Scope</h2>
+<ul>
+  <li>Power BI report or dataset migration</li>
+  <li>Snowflake data migration (covered separately)</li>
+  <li>Power BI Premium / Fabric capacity planning</li>
+</ul>
+
+<hr />
+
+<h1 id="uc1">Use Case 1: PowerBI to Snowflake — Private Connectivity</h1>
+
+<p>
+Production Power BI connects to production Snowflake through a fully private network path — no traffic traverses the public internet for the data plane. This use case documents the current Azure implementation and the target AWS equivalent.
+</p>
+
+<hr />
+
+<h2 id="uc1-current">Current Architecture (Azure)</h2>
+
+<h3>Summary</h3>
+<p>
+Power BI Service is a Microsoft SaaS product hosted in the Microsoft cloud. To reach private data sources, it relies on an <strong>On-premises data gateway</strong> — a Windows service installed inside an Azure VM that sits within the corporate VNet. The gateway establishes an <em>outbound</em> control channel to Azure Service Bus Relay; Power BI communicates with the gateway through this relay, so no inbound firewall ports are needed on the VM. Data queries travel from the gateway to Snowflake via an Azure Private Endpoint inside the same VNet, never leaving the Microsoft/Azure private backbone.
+</p>
+
+<h3>Architecture Diagram</h3>
+<p><img src="design-images/01-uc1-current-azure.drawio.png" alt="Figure 1 — Current Azure Architecture: PowerBI to Snowflake via Private Link" /></p>
+<p><em>Figure 1 — Current architecture: Power BI → On-premises Data Gateway (Azure VM) → Private Endpoint → Azure Snowflake</em></p>
+
+<h3>Component Inventory</h3>
+<table>
+  <tr><th>Component</th><th>Type</th><th>Location</th><th>Notes</th></tr>
+  <tr><td>Power BI Service</td><td>Microsoft SaaS</td><td>Microsoft Cloud</td><td>Sends queries to the gateway via Azure Service Bus Relay</td></tr>
+  <tr><td>Azure Service Bus Relay</td><td>Azure managed service</td><td>Microsoft Cloud</td><td>Acts as the relay for the control channel between Power BI and the gateway</td></tr>
+  <tr><td>On-premises Data Gateway</td><td>Windows service on Azure VM</td><td>Azure VNet (private subnet)</td><td>Initiates outbound connection to Service Bus Relay on port 443 / AMQP 5671–5672. No inbound ports required.</td></tr>
+  <tr><td>Private DNS Zone</td><td>Azure DNS</td><td>Azure, linked to VNet</td><td>Zone: <code>privatelink.snowflakecomputing.com</code>. Resolves Snowflake hostname to the private endpoint IP.</td></tr>
+  <tr><td>Private Endpoint</td><td>Azure Private Link</td><td>Azure VNet (private NIC)</td><td>Assigns a private IP to the Snowflake connection inside the VNet.</td></tr>
+  <tr><td>Azure Snowflake</td><td>Snowflake SaaS</td><td>Azure (Business Critical or higher)</td><td>Private Link must be enabled at the Snowflake account level.</td></tr>
+</table>
+
+<h3>Connection Flow</h3>
+<ol>
+  <li><strong>Control channel (outbound from gateway):</strong> The gateway VM dials out to <strong>Azure Service Bus Relay</strong> on port 443 (HTTPS/WebSocket) or port 5671–5672 (AMQP). Power BI Service communicates with the gateway through this relay — the gateway is never directly exposed to inbound traffic.</li>
+  <li><strong>Query dispatch:</strong> When a Power BI report queries Snowflake, Power BI sends the query to the gateway via the relay. The gateway executes the query against Snowflake.</li>
+  <li><strong>DNS resolution:</strong> The gateway VM resolves the Snowflake hostname (e.g. <code>xy12345.privatelink.snowflakecomputing.com</code>) using the <strong>Private DNS Zone</strong> linked to the VNet, which returns the Private Endpoint's private IP address.</li>
+  <li><strong>Data channel (private):</strong> The gateway connects to Snowflake on <strong>HTTPS port 443</strong> via the <strong>Private Endpoint</strong>. Traffic travels over the Azure Private Link backbone — no public internet.</li>
+</ol>
+
+<blockquote>
+<strong>Key security property:</strong> The data plane (gateway → Snowflake) is entirely private. The control plane (gateway → Azure Service Bus) also stays on the Microsoft/Azure backbone since the VM and Service Bus are both in the Azure ecosystem.
+</blockquote>
+
+<hr />
+
+<h2 id="uc1-future">Target Architecture (AWS)</h2>
+
+<p>Two options are available. The choice depends on whether a fully private data path to Snowflake is required by policy.</p>
+
+<table>
+  <tr><th>Dimension</th><th>Option A — EC2 + AWS PrivateLink</th><th>Option B — Direct Connector, No Gateway</th></tr>
+  <tr><td>EC2 / VPC required</td><td>Yes</td><td>No</td></tr>
+  <tr><td>Snowflake data path</td><td>Private (AWS PrivateLink)</td><td>Public internet (TLS)</td></tr>
+  <tr><td>Gateway infrastructure</td><td>On-premises data gateway on EC2</td><td>None</td></tr>
+  <tr><td>NAT Gateway needed</td><td>Yes (for gateway → Azure Service Bus)</td><td>No</td></tr>
+  <tr><td>Snowflake edition required</td><td>Business Critical or higher</td><td>Any edition</td></tr>
+  <tr><td>Infrastructure cost</td><td>Medium (EC2 + NAT Gateway)</td><td>Minimal</td></tr>
+  <tr><td>Setup complexity</td><td>High</td><td>Low</td></tr>
+  <tr><td>Choose when</td><td>Private data path is a compliance or security requirement</td><td>TLS over public internet is acceptable</td></tr>
+</table>
+
+<hr />
+
+<h3 id="uc1-future-a">Option A — EC2 Gateway + AWS PrivateLink (Private Data Path)</h3>
+
+<p>
+The On-premises data gateway moves from an Azure VM to an <strong>Amazon EC2 instance</strong> inside an AWS VPC. The gateway-to-Snowflake data path is private via <strong>AWS PrivateLink</strong> (VPC Interface Endpoint). DNS is resolved through a <strong>Route 53 Private Hosted Zone</strong>.
+</p>
+<p>
+One constraint carries over from Azure: the gateway's <strong>control channel to Azure Service Bus Relay still traverses the public internet</strong> — Power BI Service is a Microsoft product with no AWS PrivateLink endpoint. Only the data path (gateway → Snowflake) is private.
+</p>
+
+<p><img src="design-images/02-uc1-future-aws.drawio.png" alt="Figure 2 — Option A: PowerBI to Snowflake via EC2 Gateway and AWS PrivateLink" /></p>
+<p><em>Figure 2 — Option A: Power BI → On-premises Data Gateway (EC2) → VPC Interface Endpoint → AWS Snowflake</em></p>
+
+<h4>Component Inventory</h4>
+<table>
+  <tr><th>Component</th><th>Type</th><th>Location</th><th>Notes</th></tr>
+  <tr><td>Power BI Service</td><td>Microsoft SaaS</td><td>Microsoft Cloud</td><td>Sends queries via Azure Service Bus Relay — unchanged</td></tr>
+  <tr><td>Azure Service Bus Relay</td><td>Azure managed service</td><td>Microsoft Cloud</td><td>Still used. No AWS equivalent for the Power BI control channel.</td></tr>
+  <tr><td>On-premises Data Gateway</td><td>Windows service on EC2</td><td>AWS VPC (private subnet)</td><td>Same software as Azure. Requires NAT Gateway for outbound access to Azure Service Bus. Port 443 outbound required.</td></tr>
+  <tr><td>NAT Gateway</td><td>AWS managed</td><td>AWS VPC (public subnet)</td><td>Provides outbound internet for the EC2 gateway → Azure Service Bus control channel.</td></tr>
+  <tr><td>Route 53 Private Hosted Zone</td><td>AWS DNS</td><td>AWS, associated with VPC</td><td>Zone: <code>privatelink.snowflakecomputing.com</code>. CNAME to VPC Endpoint DNS name.</td></tr>
+  <tr><td>VPC Interface Endpoint</td><td>AWS PrivateLink</td><td>AWS VPC</td><td>Interface endpoint for Snowflake. SG must allow HTTPS port 443 inbound from gateway subnet.</td></tr>
+  <tr><td>AWS Snowflake</td><td>Snowflake SaaS</td><td>AWS (Business Critical or higher)</td><td>AWS PrivateLink must be enabled at the account level. Snowflake provides the service name for the VPC endpoint.</td></tr>
+</table>
+
+<h4>Connection Flow</h4>
+<ol>
+  <li><strong>Control channel (public internet):</strong> EC2 gateway dials out via <strong>NAT Gateway</strong> to <strong>Azure Service Bus Relay</strong> on port 443. This leg crosses the public internet — a known, unavoidable constraint.</li>
+  <li><strong>Query dispatch:</strong> Power BI sends queries to the gateway through the relay. The gateway executes them against Snowflake.</li>
+  <li><strong>DNS resolution:</strong> EC2 gateway resolves the Snowflake hostname via <strong>Route 53 PHZ</strong>, returning the VPC Interface Endpoint's private IP.</li>
+  <li><strong>Data channel (private):</strong> Gateway connects to Snowflake on HTTPS port 443 via the <strong>VPC Interface Endpoint</strong> — no public internet for the data path.</li>
+</ol>
+
+<blockquote class="critical">
+<strong>Constraint:</strong> The control channel (gateway → Azure Service Bus → Power BI Service) always traverses the public internet in AWS. Only the data channel (gateway → Snowflake) is private. Mitigate by restricting the EC2 Security Group outbound to Azure Service Bus relay FQDNs on port 443 only.
+</blockquote>
+
+<hr />
+
+<h3 id="uc1-future-b">Option B — Direct Connector, No Gateway (Public Internet)</h3>
+
+<p>
+Power BI Service connects directly to Snowflake using its <strong>native Snowflake connector</strong> — no On-premises data gateway, no EC2, no VPC required. Traffic travels over the public internet (TLS-encrypted). A <strong>Snowflake Network Policy</strong> using Snowflake-managed network rules automatically maintains the Power BI Service IP allowlist, so no manual IP management is needed.
+</p>
+
+<p><img src="design-images/03-uc1-future-aws-option-b.drawio.png" alt="Figure 3 — Option B: PowerBI direct connection to Snowflake via public internet" /></p>
+<p><em>Figure 3 — Option B: Power BI → Snowflake Network Policy → AWS Snowflake (public endpoint, no gateway)</em></p>
+
+<h4>Component Inventory</h4>
+<table>
+  <tr><th>Component</th><th>Type</th><th>Location</th><th>Notes</th></tr>
+  <tr><td>Power BI Service</td><td>Microsoft SaaS</td><td>Microsoft Cloud</td><td>Uses the native built-in Snowflake connector. Supports both Import and DirectQuery modes.</td></tr>
+  <tr><td>Snowflake Network Policy</td><td>Snowflake configuration</td><td>Snowflake account</td><td>Snowflake-managed network rules automatically maintain Power BI Service IP ranges. No manual IP list updates required.</td></tr>
+  <tr><td>AWS Snowflake</td><td>Snowflake SaaS</td><td>AWS (any edition)</td><td>Public endpoint must be accessible. Business Critical edition not required.</td></tr>
+</table>
+
+<h4>Connection Flow</h4>
+<ol>
+  <li><strong>Direct query:</strong> Power BI Service uses the built-in Snowflake connector to send SQL queries directly to the Snowflake public endpoint on HTTPS port 443.</li>
+  <li><strong>Network policy enforcement:</strong> Snowflake evaluates the source IP against the managed network policy. Power BI Service IPs are automatically maintained by Snowflake — requests from allowed IPs proceed; others are blocked.</li>
+  <li><strong>Query execution:</strong> Snowflake executes the query and returns results directly to Power BI Service.</li>
+</ol>
+
+<blockquote class="warning">
+<strong>Trade-off:</strong> Data travels over the public internet (TLS-encrypted). There is no private network path in this option. Choose Option A if your security policy mandates private connectivity for data in transit.
+</blockquote>
+
+<hr />
+
+<h2 id="uc1-differences">Option Comparison &amp; Migration Considerations</h2>
+
+<table>
+  <tr><th>Dimension</th><th>Azure (Current)</th><th>Option A — EC2 + PrivateLink</th><th>Option B — Direct Connector</th></tr>
+  <tr>
+    <td>Gateway host</td>
+    <td>Azure VM (Windows)</td>
+    <td>Amazon EC2 (Windows, private subnet)</td>
+    <td>None — no gateway required</td>
+  </tr>
+  <tr>
+    <td>Snowflake data path</td>
+    <td>Private (Azure Private Link backbone)</td>
+    <td>Private (AWS PrivateLink)</td>
+    <td>Public internet (TLS)</td>
+  </tr>
+  <tr>
+    <td>Control channel</td>
+    <td>Stays on Azure/Microsoft backbone</td>
+    <td>Public internet (via NAT Gateway → Azure Service Bus)</td>
+    <td>N/A — no gateway</td>
+  </tr>
+  <tr>
+    <td>DNS</td>
+    <td>Azure Private DNS Zone</td>
+    <td>Route 53 Private Hosted Zone (same zone name)</td>
+    <td>Public DNS (Snowflake public FQDN)</td>
+  </tr>
+  <tr>
+    <td>Snowflake edition</td>
+    <td>Business Critical + Private Link enabled</td>
+    <td>Business Critical + AWS PrivateLink enabled</td>
+    <td>Any edition</td>
+  </tr>
+  <tr>
+    <td>IP / network management</td>
+    <td>VNet + NSG rules</td>
+    <td>VPC + Security Groups + NAT Gateway</td>
+    <td>Snowflake-managed network rules (automatic)</td>
+  </tr>
+  <tr>
+    <td>Infrastructure cost</td>
+    <td>Azure VM + VNet</td>
+    <td>EC2 + NAT Gateway + VPC Endpoint</td>
+    <td>Minimal (no extra AWS infrastructure)</td>
+  </tr>
+  <tr>
+    <td>High availability</td>
+    <td>Gateway cluster recommended (2+ VMs)</td>
+    <td>Gateway cluster recommended (2+ EC2)</td>
+    <td>Inherent (Power BI Service SaaS)</td>
+  </tr>
+</table>
+
+<hr />
+
+<h1 id="open-questions">Open Questions &amp; Decisions</h1>
+
+<blockquote class="warning">
+The items below are unresolved. Team members should update this section as decisions are made and push the updated document to Confluence.
+</blockquote>
+
+<table>
+  <tr><th>#</th><th>Question</th><th>Owner</th><th>Status</th></tr>
+  <tr>
+    <td>1</td>
+    <td><strong>Which target option is selected — Option A (EC2 + PrivateLink) or Option B (Direct Connector)?</strong> This is the foundational decision that determines all downstream infrastructure choices.</td>
+    <td>— TBD —</td>
+    <td>Open — decision required before any AWS provisioning</td>
+  </tr>
+  <tr>
+    <td>2</td>
+    <td>What AWS region will the Snowflake account be in? (Option A only) The VPC Interface Endpoint and Route 53 PHZ must be in the same region.</td>
+    <td>— TBD —</td>
+    <td>Open</td>
+  </tr>
+  <tr>
+    <td>2</td>
+    <td>Is the AWS Snowflake account already provisioned at Business Critical tier? PrivateLink requires Business Critical or higher.</td>
+    <td>— TBD —</td>
+    <td>Open</td>
+  </tr>
+  <tr>
+    <td>3</td>
+    <td>Which AWS VPC / subnet will host the EC2 gateway? Does it already exist or does it need to be created?</td>
+    <td>— TBD —</td>
+    <td>Open</td>
+  </tr>
+  <tr>
+    <td>4</td>
+    <td>Is a NAT Gateway already available in the target VPC for outbound internet access (gateway → Azure Service Bus)?</td>
+    <td>— TBD —</td>
+    <td>Open</td>
+  </tr>
+  <tr>
+    <td>5</td>
+    <td>How many gateway instances are needed for high availability? Microsoft recommends at least two gateways in a cluster.</td>
+    <td>— TBD —</td>
+    <td>Open</td>
+  </tr>
+  <tr>
+    <td>6</td>
+    <td>Are there additional use cases beyond UC1 (e.g. other data sources, DirectQuery vs Import mode differences)?</td>
+    <td>PowerBI Team</td>
+    <td>Open — team to add use cases to this document</td>
+  </tr>
+</table>
+
+<hr />
+
+<h1 id="references">References</h1>
+
+<ul>
+  <li><a href="https://learn.microsoft.com/en-us/data-integration/gateway/service-gateway-communication">Microsoft Learn — On-premises data gateway communication settings</a></li>
+  <li><a href="https://docs.snowflake.com/en/user-guide/privatelink-azure">Snowflake Docs — Azure Private Link</a></li>
+  <li><a href="https://docs.snowflake.com/en/user-guide/admin-security-privatelink">Snowflake Docs — AWS PrivateLink</a></li>
+  <li><a href="https://docs.aws.amazon.com/whitepapers/latest/using-power-bi-with-aws-cloud/connecting-the-microsoft-power-bi-service-to-aws-data-sources.html">AWS Whitepaper — Using Power BI with AWS Cloud</a></li>
+  <li><a href="https://learn.microsoft.com/en-us/power-bi/connect-data/service-gateway-onprem">Microsoft Learn — On-premises data gateway in-depth</a></li>
+</ul>
+
+</body>
+</html>

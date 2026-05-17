@@ -1,0 +1,72 @@
+<mxGraphModel page="0" grid="0" connect="0" arrows="0" fold="0" move="1" resize="0" edit="0" rotatable="0">
+  <root>
+    <mxCell id="0"/>
+    <mxCell id="1" parent="0"/>
+
+    <!-- AWS VPC boundary -->
+    <mxCell id="10" value="&lt;b&gt;AWS VPC&lt;/b&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f0f0f0;strokeColor=#666666;verticalAlign=top;align=left;spacingLeft=12;spacingTop=8;fontSize=13;fontStyle=1;" vertex="1" parent="1">
+      <mxGeometry x="260" y="60" width="720" height="340" as="geometry"/>
+    </mxCell>
+
+    <!-- Power BI Service -->
+    <mxCell id="2" value="&lt;b&gt;Power BI Service&lt;/b&gt;&lt;br&gt;(Microsoft Cloud)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=12;" vertex="1" parent="1">
+      <mxGeometry x="30" y="100" width="170" height="65" as="geometry"/>
+    </mxCell>
+
+    <!-- Azure Service Bus Relay (still Microsoft Cloud) -->
+    <mxCell id="3" value="&lt;b&gt;Azure Service Bus Relay&lt;/b&gt;&lt;br&gt;(Microsoft Cloud)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=12;" vertex="1" parent="1">
+      <mxGeometry x="30" y="230" width="170" height="65" as="geometry"/>
+    </mxCell>
+
+    <!-- Public internet warning -->
+    <mxCell id="14" value="&lt;b&gt;⚠ Public Internet&lt;/b&gt;&lt;br&gt;Control channel traverses&lt;br&gt;public internet (via NAT GW)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=11;" vertex="1" parent="1">
+      <mxGeometry x="30" y="355" width="170" height="70" as="geometry"/>
+    </mxCell>
+
+    <!-- On-Premises Data Gateway (EC2) -->
+    <mxCell id="4" value="&lt;b&gt;On-Premises Data Gateway&lt;/b&gt;&lt;br&gt;Amazon EC2 · private subnet&lt;br&gt;&lt;i&gt;outbound via NAT Gateway (port 443)&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=12;" vertex="1" parent="1">
+      <mxGeometry x="320" y="155" width="210" height="80" as="geometry"/>
+    </mxCell>
+
+    <!-- Route 53 Private Hosted Zone -->
+    <mxCell id="5" value="&lt;b&gt;Route 53 Private Hosted Zone&lt;/b&gt;&lt;br&gt;privatelink.snowflakecomputing.com" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontSize=11;" vertex="1" parent="1">
+      <mxGeometry x="320" y="290" width="210" height="60" as="geometry"/>
+    </mxCell>
+
+    <!-- VPC Interface Endpoint -->
+    <mxCell id="6" value="&lt;b&gt;VPC Interface Endpoint&lt;/b&gt;&lt;br&gt;AWS PrivateLink&lt;br&gt;&lt;i&gt;inbound port 443 from gateway subnet&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=12;" vertex="1" parent="1">
+      <mxGeometry x="620" y="155" width="210" height="80" as="geometry"/>
+    </mxCell>
+
+    <!-- AWS Snowflake -->
+    <mxCell id="7" value="&lt;b&gt;AWS Snowflake&lt;/b&gt;&lt;br&gt;Business Critical&lt;br&gt;PrivateLink enabled" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=12;" vertex="1" parent="1">
+      <mxGeometry x="1050" y="155" width="200" height="80" as="geometry"/>
+    </mxCell>
+
+    <!-- Edge: Power BI → Azure Service Bus -->
+    <mxCell id="8" value="queries via relay" style="edgeStyle=orthogonalEdgeStyle;dashed=1;endArrow=block;startArrow=block;startFill=0;endFill=0;fontSize=10;" edge="1" source="2" target="3" parent="1">
+      <mxGeometry relative="1" as="geometry"/>
+    </mxCell>
+
+    <!-- Edge: EC2 Gateway → Service Bus (outbound public internet) -->
+    <mxCell id="9" value="outbound port 443 via NAT GW&lt;br&gt;(public internet — gateway phones home)" style="edgeStyle=orthogonalEdgeStyle;dashed=1;endArrow=block;startArrow=none;endFill=1;fontSize=10;strokeColor=#b85450;" edge="1" source="4" target="3" parent="1">
+      <mxGeometry relative="1" as="geometry"/>
+    </mxCell>
+
+    <!-- Edge: Gateway → VPC Interface Endpoint (data, HTTPS) -->
+    <mxCell id="11" value="HTTPS port 443&lt;br&gt;(data channel, private)" style="edgeStyle=orthogonalEdgeStyle;fontSize=11;" edge="1" source="4" target="6" parent="1">
+      <mxGeometry relative="1" as="geometry"/>
+    </mxCell>
+
+    <!-- Edge: VPC Interface Endpoint → Snowflake (AWS PrivateLink) -->
+    <mxCell id="12" value="AWS PrivateLink" style="edgeStyle=orthogonalEdgeStyle;fontSize=11;" edge="1" source="6" target="7" parent="1">
+      <mxGeometry relative="1" as="geometry"/>
+    </mxCell>
+
+    <!-- Edge: Route 53 PHZ → Gateway (DNS resolve, dashed) -->
+    <mxCell id="13" value="DNS resolve" style="edgeStyle=orthogonalEdgeStyle;dashed=1;endArrow=none;startArrow=none;fontSize=10;" edge="1" source="5" target="4" parent="1">
+      <mxGeometry relative="1" as="geometry"/>
+    </mxCell>
+
+  </root>
+</mxGraphModel>
